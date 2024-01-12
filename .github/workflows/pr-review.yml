@@ -7,11 +7,6 @@ jobs:
   pull_request_info:
     runs-on: ubuntu-latest
     steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_HEAD_REF})"
-        id: extract_branch
-
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
