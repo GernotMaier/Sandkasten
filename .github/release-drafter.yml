@@ -3,7 +3,9 @@ tag-template: 'v$NEXT_PATCH_VERSION'
 
 template: |
   ## What’s Changed
-  This is a test test with a bit of text and more
+  
+  What did change here?
+
 
   $CHANGES
 
