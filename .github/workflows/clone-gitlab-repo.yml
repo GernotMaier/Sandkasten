@@ -33,7 +33,7 @@ jobs:
     - name: Clone GitLab repository
       env:
         GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-        GITLAB_REPO_URL: ${{ github.event.inputs.gitlab_repo_url || 'https://gitlab.com/username/repository.git' }}
+        GITLAB_REPO_URL: ${{ github.event.inputs.gitlab_repo_url || 'https://gitlab.cta-observatory.org/GernotMaier/test_fork_sandbox.git' }}
         TARGET_DIR: ${{ github.event.inputs.target_directory || 'cloned-repo' }}
       run: |
         # Remove existing directory if it exists
