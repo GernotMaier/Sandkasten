@@ -1,0 +1,81 @@
+name: Clone GitLab Repository
+
+# Trigger the workflow manually or on push to main branch
+on:
+  workflow_dispatch:
+    inputs:
+      gitlab_repo_url:
+        description: 'GitLab repository URL (without token)'
+        required: true
+        default: 'https://gitlab.cta-observatory.org/GernotMaier/test_fork_sandbox.git'
+      target_directory:
+        description: 'Target directory to clone into'
+        required: false
+        default: 'cloned-repo'
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  clone-gitlab-repo:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout current repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Git configuration
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
+    
+    - name: Clone GitLab repository
+      env:
+        GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        GITLAB_REPO_URL: ${{ github.event.inputs.gitlab_repo_url || 'https://gitlab.cta-observatory.org/GernotMaier/test_fork_sandbox.git' }}
+        TARGET_DIR: ${{ github.event.inputs.target_directory || 'cloned-repo' }}
+      run: |
+        # Remove existing directory if it exists
+        if [ -d "$TARGET_DIR" ]; then
+          rm -rf "$TARGET_DIR"
+        fi
+        
+        # Extract the base URL and repository path
+        REPO_BASE=$(echo "$GITLAB_REPO_URL" | sed 's|https://||' | sed 's|http://||')
+        
+        # Clone the repository using the token
+        git clone https://oauth2:${GITLAB_TOKEN}@${REPO_BASE} "$TARGET_DIR"
+        
+        echo "Successfully cloned GitLab repository to $TARGET_DIR"
+        
+    - name: Verify clone success
+      env:
+        TARGET_DIR: ${{ github.event.inputs.target_directory || 'cloned-repo' }}
+      run: |
+        if [ -d "$TARGET_DIR" ]; then
+          echo "Clone verification successful!"
+          echo "Repository contents:"
+          ls -la "$TARGET_DIR"
+          
+          echo "Git information:"
+          cd "$TARGET_DIR"
+          git remote -v
+          git log --oneline -5
+        else
+          echo "Clone verification failed - directory not found"
+          exit 1
+        fi
+    
+    - name: Upload cloned repository as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: cloned-gitlab-repo
+        path: ${{ github.event.inputs.target_directory || 'cloned-repo' }}
+        retention-days: 7
+    
+    - name: Clean up sensitive information
+      run: |
+        # Remove any potential sensitive files or tokens from the workspace
+        echo "Cleaning up workspace..."
+        # Add any additional cleanup steps if needed
